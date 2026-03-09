@@ -11,7 +11,7 @@ import { ref, set, get } from 'firebase/database';
 
 const AuthContext = createContext();
 
-// Admin access is controlled by users/{uid}.role === 'admin' in RTDB.
+const ADMIN_EMAILS = ['dinesh@vit.com', 'admin@campusos.com', 'admin@vit.com'];
 
 export function useAuth() {
   return useContext(AuthContext);
@@ -23,8 +23,9 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  function checkAdmin(role) {
-    return role === 'admin';
+  function checkAdmin(role, email) {
+    const normalized = (email || '').toLowerCase().trim();
+    return role === 'admin' || ADMIN_EMAILS.includes(normalized);
   }
 
   async function ensureProfile(user) {
@@ -33,7 +34,7 @@ export function AuthProvider({ children }) {
       if (snapshot.exists()) {
         const profile = snapshot.val();
         setUserProfile(profile);
-        setIsAdmin(checkAdmin(profile?.role));
+        setIsAdmin(checkAdmin(profile?.role, user?.email));
       } else {
         const profile = {
           displayName: user.displayName || user.email?.split('@')[0] || 'Student',
@@ -41,12 +42,12 @@ export function AuthProvider({ children }) {
           photoURL: user.photoURL || null,
           department: 'Computer Science',
           year: '2nd Year',
-          role: 'student',
+          role: ADMIN_EMAILS.includes((user.email || '').toLowerCase()) ? 'admin' : 'student',
           createdAt: Date.now()
         };
         await set(ref(db, `users/${user.uid}`), profile);
         setUserProfile(profile);
-        setIsAdmin(false);
+        setIsAdmin(checkAdmin(profile.role, user?.email));
       }
     } catch (err) {
       console.error('Error fetching profile:', err);
@@ -57,7 +58,7 @@ export function AuthProvider({ children }) {
         year: '2nd Year',
         role: 'student'
       });
-      setIsAdmin(false);
+      setIsAdmin(ADMIN_EMAILS.includes((user?.email || '').toLowerCase()));
     }
   }
 
@@ -69,12 +70,12 @@ export function AuthProvider({ children }) {
       email,
       department: department || 'Computer Science',
       year: year || '2nd Year',
-      role: 'student',
+      role: ADMIN_EMAILS.includes((email || '').toLowerCase()) ? 'admin' : 'student',
       createdAt: Date.now()
     };
     await set(ref(db, `users/${cred.user.uid}`), profile);
     setUserProfile(profile);
-    setIsAdmin(false);
+    setIsAdmin(checkAdmin(profile.role, email));
     return cred;
   }
 
@@ -85,6 +86,9 @@ export function AuthProvider({ children }) {
   function logout() {
     setUserProfile(null);
     setIsAdmin(false);
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.removeItem('admin_unlocked');
+    }
     return signOut(auth);
   }
 
