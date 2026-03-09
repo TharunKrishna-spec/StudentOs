@@ -1,9 +1,8 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { auth, googleProvider, db } from '../firebase';
+import { auth, db } from '../firebase';
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  signInWithPopup,
   signOut,
   onAuthStateChanged,
   updateProfile
@@ -83,12 +82,6 @@ export function AuthProvider({ children }) {
     return signInWithEmailAndPassword(auth, email, password);
   }
 
-  async function loginWithGoogle() {
-    const cred = await signInWithPopup(auth, googleProvider);
-    await ensureProfile(cred.user);
-    return cred;
-  }
-
   function logout() {
     setUserProfile(null);
     setIsAdmin(false);
@@ -115,7 +108,6 @@ export function AuthProvider({ children }) {
     isAdmin,
     signup,
     login,
-    loginWithGoogle,
     logout,
     loading
   };
