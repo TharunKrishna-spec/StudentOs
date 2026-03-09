@@ -29,10 +29,13 @@ export default function Login() {
         'auth/user-not-found': 'No account found with this email. Click "Create Account" to sign up.',
         'auth/wrong-password': 'Incorrect password. Please try again.',
         'auth/invalid-credential': 'Invalid email or password. If new, click "Create Account".',
+        'auth/invalid-login-credentials': 'Invalid email or password. Please check and try again.',
         'auth/email-already-in-use': 'This email is already registered. Try signing in.',
         'auth/weak-password': 'Password should be at least 6 characters.',
         'auth/invalid-email': 'Please enter a valid email address.',
         'auth/too-many-requests': 'Too many attempts. Please wait and try again.',
+        'auth/operation-not-allowed': 'Email/Password sign-in is disabled in Firebase console.',
+        'auth/network-request-failed': 'Network error. Check your internet and try again.',
       };
       setError(messages[code] || err.message || 'Something went wrong');
     }
