@@ -1,0 +1,66 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "users": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (auth.uid === $uid && (!data.exists() || data.child('role').val() === newData.child('role').val())))",
+        "role": {
+          ".validate": "newData.isString() && (newData.val() === 'student' || newData.val() === 'admin')"
+        },
+        "displayName": {
+          ".validate": "newData.isString() && newData.val().length <= 80"
+        },
+        "email": {
+          ".validate": "newData.isString() && newData.val().length <= 160"
+        },
+        "department": {
+          ".validate": "newData.isString() && newData.val().length <= 80"
+        },
+        "year": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "residenceType": {
+          ".validate": "newData.isString() && (newData.val() === 'Day Scholar' || newData.val() === 'Hosteler' || newData.val() === 'Hosteller')"
+        },
+        "createdAt": {
+          ".validate": "newData.isNumber()"
+        },
+        "$other": {
+          ".validate": true
+        }
+      }
+    },
+    "budget": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+    "complaints": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "notes": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "events": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "items": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "feed": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "notifications": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    }
+  }
+}

@@ -9,6 +9,7 @@ export default function Login() {
   const [name, setName] = useState('');
   const [department, setDepartment] = useState('Computer Science');
   const [year, setYear] = useState('2nd Year');
+  const [residenceType, setResidenceType] = useState('Day Scholar');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login, signup } = useAuth();
@@ -19,7 +20,7 @@ export default function Login() {
     setLoading(true);
     try {
       if (isSignup) {
-        await signup(email, password, name, department, year);
+        await signup(email, password, name, department, year, residenceType);
       } else {
         await login(email, password);
       }
@@ -89,6 +90,13 @@ export default function Login() {
                       <option>4th Year</option>
                     </select>
                   </div>
+                </div>
+                <div className="form-group">
+                  <label>Residence</label>
+                  <select className="form-select" value={residenceType} onChange={e => setResidenceType(e.target.value)}>
+                    <option>Day Scholar</option>
+                    <option>Hosteler</option>
+                  </select>
                 </div>
               </>
             )}

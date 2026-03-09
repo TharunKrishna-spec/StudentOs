@@ -7,7 +7,8 @@ import { seedDemoData } from '../utils/seedData';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const [stats, setStats] = useState({ complaints: 0, resolved: 0, events: 0, notes: 0, lostItems: 0, users: 0 });
+  const [stats, setStats] = useState({ complaints: 0, resolved: 0, events: 0, notes: 0, lostItems: 0, users: 0, hostellers: 0, dayScholars: 0 });
+  const [userList, setUserList] = useState([]);
   const [seeding, setSeeding] = useState(false);
   const [seedMsg, setSeedMsg] = useState('');
 
@@ -27,7 +28,19 @@ export default function AdminDashboard() {
         setStats(p => ({ ...p, lostItems: items.filter(i => i.status !== 'resolved').length }));
       }
     }, errH);
-    onValue(ref(db, 'users'), snap => setStats(p => ({ ...p, users: snap.exists() ? Object.keys(snap.val()).length : 0 })), errH);
+    onValue(ref(db, 'users'), snap => {
+      if (!snap.exists()) {
+        setStats(p => ({ ...p, users: 0, hostellers: 0, dayScholars: 0 }));
+        setUserList([]);
+        return;
+      }
+      const arr = Object.entries(snap.val()).map(([id, val]) => ({ id, ...val }));
+      const hostellers = arr.filter(u => (u.residenceType || '').toLowerCase().includes('hostel')).length;
+      const dayScholars = arr.filter(u => (u.residenceType || '').toLowerCase().includes('day')).length;
+      setStats(p => ({ ...p, users: arr.length, hostellers, dayScholars }));
+      arr.sort((a, b) => (a.displayName || '').localeCompare(b.displayName || ''));
+      setUserList(arr);
+    }, errH);
   }, []);
 
   async function handleSeed() {
@@ -53,6 +66,8 @@ export default function AdminDashboard() {
         <div className="stat-card"><div className="stat-card-header"><div className="stat-card-icon blue"><BookOpen size={22} /></div></div><div className="stat-card-value">{stats.notes}</div><div className="stat-card-label">Notes Uploaded</div></div>
         <div className="stat-card"><div className="stat-card-header"><div className="stat-card-icon orange"><Search size={22} /></div></div><div className="stat-card-value">{stats.lostItems}</div><div className="stat-card-label">Lost Items Pending</div></div>
         <div className="stat-card"><div className="stat-card-header"><div className="stat-card-icon green"><Users size={22} /></div></div><div className="stat-card-value">{stats.users}</div><div className="stat-card-label">Registered Users</div></div>
+        <div className="stat-card"><div className="stat-card-header"><div className="stat-card-icon purple"><Users size={22} /></div></div><div className="stat-card-value">{stats.hostellers}</div><div className="stat-card-label">Hostellers</div></div>
+        <div className="stat-card"><div className="stat-card-header"><div className="stat-card-icon blue"><Users size={22} /></div></div><div className="stat-card-value">{stats.dayScholars}</div><div className="stat-card-label">Day Scholars</div></div>
       </div>
 
       <div className="dashboard-grid">
@@ -102,6 +117,28 @@ export default function AdminDashboard() {
           <div className="insight-item"><span className="insight-dot" style={{ background: 'var(--warning)' }}></span>{stats.lostItems} lost items unresolved</div>
           <div className="insight-item"><span className="insight-dot" style={{ background: 'var(--accent-primary)' }}></span>{stats.events} events active on campus</div>
           <div className="insight-item"><span className="insight-dot" style={{ background: 'var(--success)' }}></span>{stats.users} students on platform</div>
+        </div>
+      </div>
+
+      <div className="card" style={{ marginTop: 20 }}>
+        <h3 style={{ marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Users size={18} /> Student Directory
+        </h3>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr 1fr 1.2fr 1fr', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.08)', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 700 }}>
+          <div>Name</div><div>Email</div><div>Dept</div><div>Year</div><div>Residence</div><div>Role</div>
+        </div>
+        <div style={{ maxHeight: 320, overflowY: 'auto' }}>
+          {userList.map(u => (
+            <div key={u.id} style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr 1fr 1.2fr 1fr', gap: 10, padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: '0.8rem' }}>
+              <div>{u.displayName || '-'}</div>
+              <div style={{ color: 'var(--text-secondary)' }}>{u.email || '-'}</div>
+              <div>{u.department || '-'}</div>
+              <div>{u.year || '-'}</div>
+              <div>{u.residenceType || 'Day Scholar'}</div>
+              <div>{u.role || 'student'}</div>
+            </div>
+          ))}
+          {userList.length === 0 && <p style={{ color: 'var(--text-muted)', padding: '14px 0' }}>No users found.</p>}
         </div>
       </div>
 

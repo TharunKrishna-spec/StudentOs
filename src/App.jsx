@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useEffect, useMemo, useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Layout from './components/Layout';
 import Login from './pages/Login';
@@ -25,57 +24,9 @@ function PrivateRoute({ children }) {
   return currentUser ? children : <Navigate to="/login" />;
 }
 
-function AdminPasswordRoute({ children }) {
+function AdminRoute({ children }) {
   const { currentUser, isAdmin } = useAuth();
-  const [input, setInput] = useState('');
-  const [error, setError] = useState('');
-  const [verified, setVerified] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return window.sessionStorage.getItem('admin_unlocked') === '1';
-  });
-  const expectedPassword = useMemo(() => import.meta.env.VITE_ADMIN_PANEL_PASSWORD || 'admin123', []);
-
-  useEffect(() => {
-    if (!currentUser && typeof window !== 'undefined') {
-      window.sessionStorage.removeItem('admin_unlocked');
-      setVerified(false);
-    }
-  }, [currentUser]);
-
-  if (!currentUser || !isAdmin) return <Navigate to="/" />;
-  if (verified) return children;
-
-  return (
-    <div className="auth-page">
-      <div className="auth-container">
-        <div className="auth-card">
-          <h2>Admin Verification</h2>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: 16, fontSize: '0.9rem' }}>
-            Enter admin password to open control panel.
-          </p>
-          {error && <div className="auth-error">{error}</div>}
-          <form onSubmit={(e) => {
-            e.preventDefault();
-            if (input === expectedPassword) {
-              if (typeof window !== 'undefined') {
-                window.sessionStorage.setItem('admin_unlocked', '1');
-              }
-              setVerified(true);
-              setError('');
-            } else {
-              setError('Incorrect admin password');
-            }
-          }}>
-            <div className="form-group">
-              <label>Password</label>
-              <input className="form-input" type="password" value={input} onChange={e => setInput(e.target.value)} required />
-            </div>
-            <button className="btn btn-primary" type="submit">Unlock Admin</button>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
+  return currentUser && isAdmin ? children : <Navigate to="/" />;
 }
 
 function PublicRoute({ children }) {
@@ -95,11 +46,11 @@ function AppRoutes() {
         <Route path="complaints" element={<Complaints />} />
         <Route path="budget" element={<Budget />} />
         <Route path="feed" element={<Feed />} />
-        <Route path={ADMIN_ROUTE_PATH} element={<AdminPasswordRoute><AdminDashboard /></AdminPasswordRoute>} />
-        <Route path={ADMIN_COMPLAINTS_PATH} element={<AdminPasswordRoute><AdminComplaints /></AdminPasswordRoute>} />
-        <Route path={ADMIN_NOTES_PATH} element={<AdminPasswordRoute><Notes /></AdminPasswordRoute>} />
-        <Route path={ADMIN_EVENTS_PATH} element={<AdminPasswordRoute><Events /></AdminPasswordRoute>} />
-        <Route path={ADMIN_LOST_FOUND_PATH} element={<AdminPasswordRoute><LostFound /></AdminPasswordRoute>} />
+        <Route path={ADMIN_ROUTE_PATH} element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+        <Route path={ADMIN_COMPLAINTS_PATH} element={<AdminRoute><AdminComplaints /></AdminRoute>} />
+        <Route path={ADMIN_NOTES_PATH} element={<AdminRoute><Notes /></AdminRoute>} />
+        <Route path={ADMIN_EVENTS_PATH} element={<AdminRoute><Events /></AdminRoute>} />
+        <Route path={ADMIN_LOST_FOUND_PATH} element={<AdminRoute><LostFound /></AdminRoute>} />
       </Route>
     </Routes>
   );

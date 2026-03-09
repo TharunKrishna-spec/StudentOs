@@ -7,11 +7,9 @@ import {
   onAuthStateChanged,
   updateProfile
 } from 'firebase/auth';
-import { ref, set, get } from 'firebase/database';
+import { ref, set, get, update } from 'firebase/database';
 
 const AuthContext = createContext();
-
-const ADMIN_EMAILS = ['dinesh@vit.com', 'admin@campusos.com', 'admin@vit.com'];
 
 export function useAuth() {
   return useContext(AuthContext);
@@ -23,9 +21,8 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  function checkAdmin(role, email) {
-    const normalized = (email || '').toLowerCase().trim();
-    return role === 'admin' || ADMIN_EMAILS.includes(normalized);
+  function checkAdmin(role) {
+    return role === 'admin';
   }
 
   async function ensureProfile(user) {
@@ -33,8 +30,19 @@ export function AuthProvider({ children }) {
       const snapshot = await get(ref(db, `users/${user.uid}`));
       if (snapshot.exists()) {
         const profile = snapshot.val();
-        setUserProfile(profile);
-        setIsAdmin(checkAdmin(profile?.role, user?.email));
+        const normalizedProfile = {
+          ...profile,
+          role: profile?.role || 'student',
+          residenceType: profile?.residenceType || 'Day Scholar'
+        };
+        setUserProfile(normalizedProfile);
+        setIsAdmin(checkAdmin(normalizedProfile.role));
+        if (!profile?.residenceType || !profile?.role) {
+          await update(ref(db, `users/${user.uid}`), {
+            residenceType: profile?.residenceType || 'Day Scholar',
+            role: profile?.role || 'student'
+          });
+        }
       } else {
         const profile = {
           displayName: user.displayName || user.email?.split('@')[0] || 'Student',
@@ -42,12 +50,13 @@ export function AuthProvider({ children }) {
           photoURL: user.photoURL || null,
           department: 'Computer Science',
           year: '2nd Year',
-          role: ADMIN_EMAILS.includes((user.email || '').toLowerCase()) ? 'admin' : 'student',
+          residenceType: 'Day Scholar',
+          role: 'student',
           createdAt: Date.now()
         };
         await set(ref(db, `users/${user.uid}`), profile);
         setUserProfile(profile);
-        setIsAdmin(checkAdmin(profile.role, user?.email));
+        setIsAdmin(checkAdmin(profile.role));
       }
     } catch (err) {
       console.error('Error fetching profile:', err);
@@ -56,13 +65,14 @@ export function AuthProvider({ children }) {
         email: user.email,
         department: 'Computer Science',
         year: '2nd Year',
+        residenceType: 'Day Scholar',
         role: 'student'
       });
-      setIsAdmin(ADMIN_EMAILS.includes((user?.email || '').toLowerCase()));
+      setIsAdmin(false);
     }
   }
 
-  async function signup(email, password, displayName, department, year) {
+  async function signup(email, password, displayName, department, year, residenceType) {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(cred.user, { displayName });
     const profile = {
@@ -70,12 +80,13 @@ export function AuthProvider({ children }) {
       email,
       department: department || 'Computer Science',
       year: year || '2nd Year',
-      role: ADMIN_EMAILS.includes((email || '').toLowerCase()) ? 'admin' : 'student',
+      residenceType: residenceType || 'Day Scholar',
+      role: 'student',
       createdAt: Date.now()
     };
     await set(ref(db, `users/${cred.user.uid}`), profile);
     setUserProfile(profile);
-    setIsAdmin(checkAdmin(profile.role, email));
+    setIsAdmin(checkAdmin(profile.role));
     return cred;
   }
 
@@ -86,9 +97,6 @@ export function AuthProvider({ children }) {
   function logout() {
     setUserProfile(null);
     setIsAdmin(false);
-    if (typeof window !== 'undefined') {
-      window.sessionStorage.removeItem('admin_unlocked');
-    }
     return signOut(auth);
   }
 

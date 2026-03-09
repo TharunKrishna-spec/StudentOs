@@ -3,7 +3,7 @@
 CampusOS is a React + Vite + Firebase (Auth + Realtime Database) campus platform.
 
 ## Features
-- Login/signup with email/password and Google sign-in
+- Login/signup with email/password
 - Dashboard + feed + notifications
 - Notes sharing
 - Events with calendar and RSVP
@@ -54,7 +54,7 @@ Hidden admin routes:
 - `/ops-core-9x7-lost-found`
 
 ## Admin Role Model
-Admin access is **not** based on email anymore.
+Admin access is based only on RTDB role.
 
 A user is admin only when this is set in RTDB:
 - `users/{uid}/role = "admin"`
@@ -68,17 +68,23 @@ If role is changed in DB, sign out and sign in again.
 Project config is currently in `src/firebase.js`.
 For production, recommended:
 - move config to environment variables
-- enforce strict RTDB security rules
-- keep admin writes protected by role checks in rules
+- deploy strict RTDB security rules from `firebase/rtdb.rules.json`
+- do not use client-side admin passwords for access control
 
 ## Hosting Checklist
 Before hosting:
 1. `npm run build` passes.
 2. Admin users have `role: "admin"` in RTDB.
 3. Non-admin users have `role: "student"`.
-4. Firebase Auth providers are enabled (Email/Password, Google if needed).
+4. Firebase Auth provider Email/Password is enabled.
 5. RTDB rules are locked down.
 6. Deploy `dist` folder to your host (Vercel/Netlify/Firebase Hosting).
+
+## Deploy RTDB Rules
+From project root:
+```bash
+firebase deploy --only database
+```
 
 ## Current Scripts
 - `npm run dev`
