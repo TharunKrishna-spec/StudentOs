@@ -82,7 +82,6 @@ export default function Complaints() {
   async function updateStatus(id, status) {
     await update(ref(db, `complaints/${id}`), { status, ...(status === 'resolved' ? { resolvedAt: Date.now() } : {}) });
     if (status === 'resolved') {
-      await push(ref(db, 'notifications'), { type: 'complaints', message: `Complaint resolved! ✅`, createdAt: Date.now() });
       await push(ref(db, 'feed'), { type: 'complaints', title: '✅ Complaint resolved', description: 'Admin resolved a hostel complaint', createdAt: Date.now() });
     }
   }
@@ -126,7 +125,7 @@ export default function Complaints() {
                   {c.isAnonymous && <span className="badge" style={{ background: 'rgba(139,92,246,0.12)', color: '#a78bfa' }}><EyeOff size={10} /> Anonymous</span>}
                   {urgency.level !== 'LOW' && <span className="badge" style={{ background: urgency.bg, color: urgency.color, fontWeight: 700 }}><Flame size={10} /> {urgency.level}</span>}
                 </div>
-                {(isAdmin || c.userId === currentUser.uid) && <button className="btn-icon" onClick={() => remove(ref(db, `complaints/${c.id}`))}><Trash2 size={16} /></button>}
+                {isAdmin && <button className="btn-icon" onClick={() => remove(ref(db, `complaints/${c.id}`))}><Trash2 size={16} /></button>}
               </div>
               <div className="card-title">{c.title}</div>
               <div className="card-body">{c.description}</div>

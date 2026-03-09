@@ -114,7 +114,7 @@ export default function Notes() {
                   <button className={`btn-icon ${n.bookmarkedBy?.[currentUser.uid] ? 'active' : ''}`} onClick={() => handleBookmark(n.id)} title="Bookmark" style={{ color: n.bookmarkedBy?.[currentUser.uid] ? 'var(--warning)' : undefined }}>
                     <Bookmark size={16} fill={n.bookmarkedBy?.[currentUser.uid] ? 'var(--warning)' : 'none'} />
                   </button>
-                  {(isAdmin || n.userId === currentUser.uid) && <button className="btn-icon" onClick={() => remove(ref(db, `notes/${n.id}`))}><Trash2 size={16} /></button>}
+                  {isAdmin && <button className="btn-icon" onClick={() => remove(ref(db, `notes/${n.id}`))}><Trash2 size={16} /></button>}
                 </div>
               </div>
               <div className="card-title">{n.title}</div>

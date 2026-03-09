@@ -10,7 +10,11 @@ const pageTitles = {
   '/complaints': 'Hostel Complaints',
   '/budget': 'Budget Tracker',
   '/feed': 'Campus Feed',
-  '/admin': 'Admin Dashboard'
+  '/ops-core-9x7': 'Admin Dashboard',
+  '/ops-core-9x7-complaints': 'Admin Complaints',
+  '/ops-core-9x7-notes': 'Admin Notes',
+  '/ops-core-9x7-events': 'Admin Events',
+  '/ops-core-9x7-lost-found': 'Admin Lost & Found'
 };
 
 export default function Layout() {

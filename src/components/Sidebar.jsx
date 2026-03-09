@@ -36,7 +36,7 @@ const navSections = [
 ];
 
 export default function Sidebar() {
-  const { currentUser, userProfile, isAdmin, logout } = useAuth();
+  const { currentUser, userProfile, logout } = useAuth();
 
   const getInitials = () => {
     const name = currentUser?.displayName || userProfile?.displayName || 'S';
@@ -70,21 +70,11 @@ export default function Sidebar() {
       </nav>
 
       <div className="sidebar-footer">
-        {/* Admin access hidden — only visible to admin emails, looks like a subtle footer link */}
-        {isAdmin && (
-          <NavLink
-            to="/admin"
-            className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
-            style={{ fontSize: '0.75rem', padding: '6px 12px', marginBottom: 8, opacity: 0.5 }}
-          >
-            🛡️ Admin Panel
-          </NavLink>
-        )}
         <div className="sidebar-user" onClick={logout}>
           <div className="sidebar-avatar">{getInitials()}</div>
           <div className="sidebar-user-info">
             <div className="sidebar-user-name">{currentUser?.displayName || 'Student'}</div>
-            <div className="sidebar-user-role">🎓 Student</div>
+            <div className="sidebar-user-role">Student</div>
           </div>
           <LogOut size={16} style={{ color: 'var(--text-muted)' }} />
         </div>

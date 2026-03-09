@@ -14,7 +14,7 @@ export default function LostFound() {
   const [showModal, setShowModal] = useState(false);
   const [contactModal, setContactModal] = useState(null);
   const [contactMsg, setContactMsg] = useState('');
-  const [form, setForm] = useState({ title: '', description: '', type: 'lost', location: 'Library', contactInfo: '' });
+  const [form, setForm] = useState({ title: '', description: '', type: 'lost', location: 'Library', contactInfo: '', imageUrl: '' });
 
   useEffect(() => {
     const unsub = onValue(ref(db, 'items'), snap => {
@@ -71,13 +71,12 @@ export default function LostFound() {
       await push(ref(db, 'notifications'), { type: 'lost-found', message: `🎯 Potential match found for "${form.title}"! Check Lost & Found.`, createdAt: Date.now() });
     }
 
-    setForm({ title: '', description: '', type: 'lost', location: 'Library', contactInfo: '' });
+    setForm({ title: '', description: '', type: 'lost', location: 'Library', contactInfo: '', imageUrl: '' });
     setShowModal(false);
   }
 
   async function handleResolve(id) {
     await update(ref(db, `items/${id}`), { status: 'resolved', resolvedAt: Date.now() });
-    await push(ref(db, 'notifications'), { type: 'lost-found', message: `Item resolved! 🎉`, createdAt: Date.now() });
   }
 
   async function handleContact(itemId) {
@@ -134,16 +133,31 @@ export default function LostFound() {
                 <span className={`badge ${item.type === 'lost' ? 'badge-lost' : 'badge-found'}`}>{item.type === 'lost' ? '🔴 Lost' : '🟢 Found'}</span>
                 <div style={{ display: 'flex', gap: 4 }}>
                   {item.status === 'resolved' && <span className="badge badge-resolved">✅ Resolved</span>}
-                  {(isAdmin || item.userId === currentUser.uid) && <button className="btn-icon" onClick={() => remove(ref(db, `items/${item.id}`))}><Trash2 size={16} /></button>}
+                  {isAdmin && <button className="btn-icon" onClick={() => remove(ref(db, `items/${item.id}`))}><Trash2 size={16} /></button>}
                 </div>
               </div>
               <div className="card-title">{item.title}</div>
               <div className="card-body">{item.description}</div>
+              {item.imageUrl && (
+                <div style={{ marginTop: 10, borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <img
+                    src={item.imageUrl}
+                    alt={item.title}
+                    loading="lazy"
+                    style={{ width: '100%', maxHeight: 220, objectFit: 'cover', display: 'block' }}
+                  />
+                </div>
+              )}
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 10, fontSize: '0.78rem', color: 'var(--text-muted)' }}>
                 <span><MapPin size={12} /> {item.location}</span>
                 <span><Clock size={12} /> {formatTime(item.createdAt)}</span>
                 <span>by {item.userName}</span>
               </div>
+              {item.contactInfo && (
+                <div style={{ marginTop: 6, fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                  Contact: {item.contactInfo}
+                </div>
+              )}
 
               {/* Smart Match Results with Score */}
               {matches.length > 0 && (
@@ -152,14 +166,24 @@ export default function LostFound() {
                   {matches.slice(0, 2).map(m => (
                     <div key={m.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.78rem', padding: '6px 0' }}>
                       <span>{m.title} ({m.location})</span>
-                      <span style={{ fontWeight: 700, color: m.score >= 60 ? 'var(--success)' : 'var(--warning)', padding: '2px 8px', borderRadius: 12, background: m.score >= 60 ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)' }}>{m.score}% match</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <button
+                          className="btn-icon"
+                          onClick={() => setContactModal(m.id)}
+                          title="Contact owner"
+                          style={{ fontSize: '0.72rem', padding: '4px 8px', borderRadius: 12, border: '1px solid rgba(99,102,241,0.35)', color: 'var(--accent-primary)' }}
+                        >
+                          Contact
+                        </button>
+                        <span style={{ fontWeight: 700, color: m.score >= 60 ? 'var(--success)' : 'var(--warning)', padding: '2px 8px', borderRadius: 12, background: m.score >= 60 ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)' }}>{m.score}% match</span>
+                      </div>
                     </div>
                   ))}
                 </div>
               )}
 
               <div className="card-footer" style={{ flexWrap: 'wrap', gap: 8 }}>
-                {item.status !== 'resolved' && (isAdmin || item.userId === currentUser.uid) && (
+                {item.status !== 'resolved' && isAdmin && (
                   <button className="btn btn-primary" style={{ width: 'auto', padding: '6px 16px', fontSize: '0.8rem' }} onClick={() => handleResolve(item.id)}>✅ Mark Resolved</button>
                 )}
                 <button className="btn-icon" onClick={() => setContactModal(contactModal === item.id ? null : item.id)} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.8rem' }}>
@@ -170,8 +194,8 @@ export default function LostFound() {
               {/* In-App Contact */}
               {contactModal === item.id && (
                 <div style={{ marginTop: 10, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 10 }}>
-                  <div style={{ maxHeight: 120, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
-                    {msgs.length === 0 && <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Send a message to the reporter</p>}
+                <div style={{ maxHeight: 120, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
+                    {msgs.length === 0 && <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Send a message to the owner/finder</p>}
                     {msgs.map(m => (
                       <div key={m.id} style={{ fontSize: '0.8rem', padding: '6px 10px', borderRadius: 8, background: m.userId === currentUser.uid ? 'rgba(99,102,241,0.12)' : 'rgba(255,255,255,0.04)' }}>
                         <strong>{m.userName}:</strong> {m.text}
@@ -201,6 +225,16 @@ export default function LostFound() {
               <div className="form-row">
                 <div className="form-group"><label><MapPin size={14} style={{ verticalAlign: 'middle' }} /> Location</label><select className="form-select" value={form.location} onChange={e => setForm({ ...form, location: e.target.value })}>{LOCATIONS.map(l => <option key={l}>{l}</option>)}</select></div>
                 <div className="form-group"><label>Contact Info (optional)</label><input className="form-input" placeholder="Phone / WhatsApp" value={form.contactInfo} onChange={e => setForm({ ...form, contactInfo: e.target.value })} /></div>
+              </div>
+              <div className="form-group">
+                <label>Image URL (optional)</label>
+                <input
+                  className="form-input"
+                  type="url"
+                  placeholder="https://..."
+                  value={form.imageUrl}
+                  onChange={e => setForm({ ...form, imageUrl: e.target.value })}
+                />
               </div>
               <button className="btn btn-primary" type="submit">Submit Report</button>
             </form>

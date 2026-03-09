@@ -69,8 +69,8 @@ export default function Budget() {
 
   // Spending alerts
   const alerts = [];
-  if (budgetPercent >= 90) alerts.push({ msg: '🚨 You've exceeded 90% of your budget!', color: 'var(--danger)' });
-  else if (budgetPercent >= 70) alerts.push({ msg: '⚠️ You've used 70% of your monthly budget', color: 'var(--warning)' });
+  if (budgetPercent >= 90) alerts.push({ msg: "🚨 You've exceeded 90% of your budget!", color: 'var(--danger)' });
+  else if (budgetPercent >= 70) alerts.push({ msg: "⚠️ You've used 70% of your monthly budget", color: 'var(--warning)' });
   if (pieData[0] && pieData[0].value > expense * 0.5) alerts.push({ msg: `💡 ${pieData[0].name} is more than 50% of your spending`, color: 'var(--info)' });
   if (dailyAvg > budgetGoal / 30) alerts.push({ msg: `📊 Daily avg ₹${Math.round(dailyAvg)} exceeds sustainable rate`, color: 'var(--warning)' });
 

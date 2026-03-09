@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AlertTriangle, CheckCircle, Calendar, BookOpen, Search, Users, Brain, TrendingUp, Database, Loader } from 'lucide-react';
 import { db } from '../firebase';
 import { ref, onValue } from 'firebase/database';
 import { seedDemoData } from '../utils/seedData';
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({ complaints: 0, resolved: 0, events: 0, notes: 0, lostItems: 0, users: 0 });
   const [seeding, setSeeding] = useState(false);
   const [seedMsg, setSeedMsg] = useState('');
@@ -66,6 +68,18 @@ export default function AdminDashboard() {
                 <div className="progress-fill" style={{ width: `${stats.complaints > 0 ? (stats.resolved / stats.complaints) * 100 : 0}%` }} />
               </div>
             </div>
+            <button className="btn btn-secondary" style={{ width: '100%', marginTop: 10 }} onClick={() => navigate('/ops-core-9x7-complaints')}>
+              Open Complaints Control
+            </button>
+            <button className="btn btn-secondary" style={{ width: '100%', marginTop: 8 }} onClick={() => navigate('/ops-core-9x7-notes')}>
+              Open Notes Control
+            </button>
+            <button className="btn btn-secondary" style={{ width: '100%', marginTop: 8 }} onClick={() => navigate('/ops-core-9x7-events')}>
+              Open Events Control
+            </button>
+            <button className="btn btn-secondary" style={{ width: '100%', marginTop: 8 }} onClick={() => navigate('/ops-core-9x7-lost-found')}>
+              Open Lost & Found Control
+            </button>
           </div>
 
           {/* Seed Demo Data */}

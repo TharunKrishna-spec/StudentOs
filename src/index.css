@@ -732,6 +732,61 @@ body {
   flex-wrap: wrap;
 }
 
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 260px;
+  max-width: 440px;
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border-glass);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.03));
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.22);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.search-box svg {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: color 0.2s ease, transform 0.25s ease;
+}
+
+.search-box input {
+  width: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+
+.search-box input::placeholder {
+  color: var(--text-muted);
+}
+
+.search-box:focus-within {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-glow), 0 8px 28px rgba(99, 102, 241, 0.18);
+  transform: translateY(-1px) scale(1.01);
+}
+
+.search-box:focus-within svg {
+  color: var(--accent-primary);
+  transform: scale(1.08);
+}
+
+.search-box input:focus {
+  animation: searchCaretPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes searchCaretPulse {
+  0%, 100% { caret-color: var(--accent-primary); }
+  50% { caret-color: #a78bfa; }
+}
+
 .filter-btn {
   padding: 8px 16px;
   border-radius: 20px;
@@ -1226,8 +1281,26 @@ body {
 .calendar-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 8px;
   margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.calendar-header h3 {
+  min-width: 170px;
+  text-align: center;
+}
+
+.calendar-nav-btn {
+  border: 1px solid var(--border-glass);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.calendar-nav-btn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
 }
 
 .calendar-grid-week {
@@ -1282,6 +1355,78 @@ body {
 .calendar-day.other-month {
   color: var(--text-muted);
   opacity: 0.4;
+}
+
+.calendar-day-count {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  min-width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  padding: 0 3px;
+  background: rgba(99, 102, 241, 0.2);
+  color: var(--accent-primary);
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
+}
+
+.events-calendar-list {
+  margin-top: 14px;
+  border-top: 1px solid var(--border-glass);
+  padding-top: 12px;
+}
+
+.events-calendar-list h4 {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.events-calendar-item {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.events-calendar-item:last-child {
+  border-bottom: none;
+}
+
+.events-calendar-date {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(99, 102, 241, 0.14);
+  color: var(--accent-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.events-calendar-title {
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.events-calendar-meta {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.events-calendar-empty {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  padding: 8px 0;
 }
 
 /* =================== RSVP BUTTONS =================== */
@@ -1460,6 +1605,11 @@ body {
 
   .form-row {
     grid-template-columns: 1fr;
+  }
+
+  .search-box {
+    min-width: 100%;
+    max-width: 100%;
   }
 }
 
@@ -1742,6 +1892,13 @@ body {
   height: 300%;
   background: conic-gradient(from 0deg, transparent, rgba(99,102,241,0.03), transparent, rgba(139,92,246,0.03), transparent);
   animation: cardShimmer 8s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.auth-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 @keyframes cardShimmer {
